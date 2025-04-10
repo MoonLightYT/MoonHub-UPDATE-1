@@ -185,36 +185,23 @@ createAutoCallback("Auto Handstands", "Handstands")
 
 local folder2 = Misc:AddFolder("Auto Boulders")
 
-local function createAutoRockSwitch(rockName, requiredDurability)
-    folder2:AddSwitch(rockName, function(state)
-        local autoRockEnabled = state
-        getgenv().autoFarm = autoRockEnabled
-        
-        while autoRockEnabled do
-            task.wait()
-            local player = game:GetService("Players").LocalPlayer
-            local durability = player.Durability.Value
-            
-            if durability >= requiredDurability then
-                for _, v in pairs(game.Workspace.machinesFolder:GetDescendants()) do
-                    if v.Name == "neededDurability" and v.Value == requiredDurability then
-                        local character = player.Character
-                        if character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                            firetouchinterest(v.Parent.Rock, character.RightHand, 0)
-                            firetouchinterest(v.Parent.Rock, character.RightHand, 1)
-                            firetouchinterest(v.Parent.Rock, character.LeftHand, 0)
-                            firetouchinterest(v.Parent.Rock, character.LeftHand, 1)
-                            gettool() -- Presuming this function is defined elsewhere
-                        end
-                    end
-                end
-            end
-            
-            autoRockEnabled = getgenv().autoFarm -- To check for termination from outside
-        end
-    end)
-end
-
-createAutoRockSwitch("Auto Tiny Rock", 0)
-createAutoRockSwitch("Starter Rock Island", 100)
-createAutoRockSwitch("Legends Beach Rock", 5000)
+folder2:AddSwitch("Auto Frost Rock", function(state)
+   autofrostrock = state
+   if autofrostrock then
+       getgenv().autoFarm = Value
+		while getgenv().autoFarm do
+			task.wait(0.001)
+			if game:GetService("Players").LocalPlayer.Durability.Value >= 150000 then
+				for i, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
+					if v.Name == "neededDurability" and v.Value == 150000 and game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
+						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
+						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
+						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
+						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
+						gettool()
+					end
+				end
+			end
+		end
+	end
+})
