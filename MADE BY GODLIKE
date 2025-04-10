@@ -25,3 +25,17 @@ folder:AddSwitch("Auto Join Brawl", function(state)
         end)
     end
 end)
+
+local autoJoinToggle = false  -- Initial state of the toggle
+folder:AddSwitch("Auto Join Brawl GOD", function(state)
+    autoJoinToggle = state  -- Update the toggle state based on user interaction
+    if autoJoinToggle then
+        task.spawn(function()
+            while autoJoinToggle do  -- Corrected to use autoJoinToggle
+                game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")  -- Join brawl
+                task.wait(0)  -- Wait time for the loop
+            end
+        end)
+    end
+end)
+
