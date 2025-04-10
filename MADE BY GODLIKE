@@ -179,25 +179,3 @@ createAutoCallback("Auto Weight", "Weight")
 createAutoCallback("Auto Pushups", "Pushups")
 createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
-
-local folder2 = Main:AddFolder("Auto Boulders")  -- Fixed: Change from Misc to Main (Assuming Misc was wrong)
-
-folder2:AddSwitch("Auto Frost Rock", function(state)
-    autofrostrock = state
-    if autofrostrock then
-        getgenv().autoFarm = true  -- Fixed the undefined variable issue
-        while getgenv().autoFarm do
-            task.wait(0.001)
-            if game:GetService("Players").LocalPlayer.Durability.Value >= 150000 then
-                for _, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
-                    if v.Name == "neededDurability" and v.Value == 150000 and game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
-                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
-                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
-                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
-                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
-                    end
-                end
-            end
-        end
-    end
-end)
