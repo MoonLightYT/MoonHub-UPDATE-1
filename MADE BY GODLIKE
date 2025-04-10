@@ -183,7 +183,7 @@ createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
 
 
-local folder2 = Main:AddFolder("Auto Boulders")
+local folder2 = Misc:AddFolder("Auto Boulders")
 
 local function createAutoRockSwitch(rockName, requiredDurability)
     folder2:AddSwitch(rockName, function(state)
