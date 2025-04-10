@@ -1,0 +1,62 @@
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library/main/Library", true))()
+
+local window = library:AddWindow("MoonHub-Elerium-Public", {
+    main_color = Color3.fromRGB(0, 0, 0), -- Color
+    min_size = Vector2.new(470, 470), -- Size of the GUI
+    can_resize = false,
+})
+local Main = Window:AddTab("Main")
+local folder = Main:AddFolder("Misc")
+
+folder:AddButton("Anti Afk", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk", true))()
+end)
+
+folder:AddButton("Anti Lag", function()
+    local decalsyeeted = true
+        local gameService = game
+        local workspace = gameService.Workspace
+        local lighting = gameService.Lighting
+        local terrain = workspace.Terrain
+        
+        -- Optimize Terrain
+        terrain.WaterWaveSize = 0
+        terrain.WaterWaveSpeed = 0
+        terrain.WaterReflectance = 0
+        terrain.WaterTransparency = 0
+        
+        -- Optimize Lighting
+        lighting.GlobalShadows = false
+        lighting.FogEnd = 9e9
+        lighting.Brightness = 0
+        settings().Rendering.QualityLevel = "Level01"
+        
+        -- Iterate through all descendants
+        for _, v in pairs(gameService:GetDescendants()) do
+            if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+                v.Material = "Plastic"
+                v.Reflectance = 0
+            elseif (v:IsA("Decal") or v:IsA("Texture")) and decalsyeeted then
+                v.Transparency = 1
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+                v.Lifetime = NumberRange.new(0)
+            elseif v:IsA("Explosion") then
+                v.BlastPressure = 1
+                v.BlastRadius = 1
+            elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+                v.Enabled = false
+            elseif v:IsA("MeshPart") then
+                v.Material = "Plastic"
+                v.Reflectance = 0
+                v.TextureID = 10385902758728957
+            end
+        end
+        
+        -- Iterate through all lighting effects
+        for _, e in pairs(lighting:GetChildren()) do
+            if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+                e.Enabled = false
+            end
+        end
+    end
+end)
