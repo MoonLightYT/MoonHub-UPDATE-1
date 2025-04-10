@@ -39,3 +39,19 @@ folder:AddSwitch("Auto Join Brawl GOD", function(state)
     end
 end)
 
+folder:AddButton("Infinite Yeild", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua'))()
+end)
+
+folder:AddButton("FREE auto lift pass", function()
+    local gamepassFolder = game:GetService("ReplicatedStorage").gamepassIds
+		local player = game:GetService("Players").LocalPlayer
+		for _, gamepass in pairs(gamepassFolder:GetChildren()) do
+			local value = Instance.new("IntValue")
+			value.Name = gamepass.Name
+			value.Value = gamepass.Value
+			value.Parent = player.ownedGamepasses
+		end
+	end
+end)
+
