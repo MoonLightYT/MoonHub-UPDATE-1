@@ -15,6 +15,7 @@ local autoweight = false
 local autopushups = false
 local autositups = false
 local autohandstands = false
+local autofrostrock = false
 
 local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
@@ -81,7 +82,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                     local myCharacter = game.Players.LocalPlayer.Character
                     local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
                     if myRoot then
-                        local currentRadius = 10 -- You may need to define or update `currentRadius`
+                        local currentRadius = 10 -- Define or update `currentRadius`
                         radiusVisual.Size = Vector3.new(currentRadius * 5, 5.5, currentRadius * 2)
                         radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
                         
@@ -90,7 +91,6 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                 local char = player.Character
                                 local root = char and char:FindFirstChild("HumanoidRootPart")
                                 if root and (root.Position - myRoot.Position).Magnitude <= currentRadius then
-                                    -- Effect handling
                                     local killEffect = Instance.new("Part")
                                     killEffect.Anchored = true
                                     killEffect.CanCollide = false
@@ -101,7 +101,6 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                     killEffect.Size = Vector3.new(5, 5, 5)
                                     killEffect.Parent = workspace
                                     
-                                    -- Tween effect
                                     game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
                                         Size = Vector3.new(0, 0, 0),
                                         Transparency = 1
@@ -114,7 +113,6 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                 end
                             end
                         end
-                        
                         task.wait(0.1)
                     end
                 end)
@@ -182,26 +180,24 @@ createAutoCallback("Auto Pushups", "Pushups")
 createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
 
-
-local folder2 = Misc:AddFolder("Auto Boulders")
+local folder2 = Main:AddFolder("Auto Boulders")  -- Fixed: Change from Misc to Main (Assuming Misc was wrong)
 
 folder2:AddSwitch("Auto Frost Rock", function(state)
-   autofrostrock = state
-   if autofrostrock then
-       getgenv().autoFarm = Value
-		while getgenv().autoFarm do
-			task.wait(0.001)
-			if game:GetService("Players").LocalPlayer.Durability.Value >= 150000 then
-				for i, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
-					if v.Name == "neededDurability" and v.Value == 150000 and game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
-						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
-						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
-						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
-						firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
-						gettool()
-					end
-				end
-			end
-		end
-	end
-})
+    autofrostrock = state
+    if autofrostrock then
+        getgenv().autoFarm = true  -- Fixed the undefined variable issue
+        while getgenv().autoFarm do
+            task.wait(0.001)
+            if game:GetService("Players").LocalPlayer.Durability.Value >= 150000 then
+                for _, v in pairs(game:GetService("Workspace").machinesFolder:GetDescendants()) do
+                    if v.Name == "neededDurability" and v.Value == 150000 and game.Players.LocalPlayer.Character:FindFirstChild("LeftHand") and game.Players.LocalPlayer.Character:FindFirstChild("RightHand") then
+                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 0)
+                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.RightHand, 1)
+                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 0)
+                        firetouchinterest(v.Parent.Rock, game:GetService("Players").LocalPlayer.Character.LeftHand, 1)
+                    end
+                end
+            end
+        end
+    end
+end)
