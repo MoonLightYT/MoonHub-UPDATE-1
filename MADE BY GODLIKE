@@ -147,6 +147,17 @@ folder:AddSwitch("Fast Tools", function(state)
     end
 end)
 
+
+local folder2 = Main:AddFolder("Misc V2")
+
+folder2:AddSwitch("Auto SpinWheel", function(state)
+  spinwheel = state
+  if spinwheel then
+      while v do
+			game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
+			task.wait(1)
+		end
+	end)
 --------------------------------------------------------------------------------
 -- Auto Weight Tab
 local AutoWeight = window:AddTab("Auto Weight")
