@@ -53,3 +53,74 @@ folder:AddButton("FREE Auto Lift Pass", function()
         value.Parent = player.ownedGamepasses
     end
 end)
+
+
+folder:AddSwitch("Matrix Kill Aura", function(state)
+    matrixkillaura = state
+    if matrixkillaura then
+        getgenv().killNearby = true -- Changed `v` to `true` if `v` is not defined elsewhere
+        local radiusVisual = Instance.new("Part")
+        radiusVisual.Anchored = true
+        radiusVisual.CanCollide = false
+        radiusVisual.Transparency = 0.8
+        radiusVisual.Material = Enum.Material.ForceField
+        radiusVisual.Color = Color3.fromRGB(0, 255, 0)
+        radiusVisual.Size = Vector3.new(1, 0.1, 1)
+
+        radiusVisual.Parent = workspace -- Move this outside the loop
+
+        task.spawn(function()
+            while getgenv().killNearby do
+                pcall(function()
+                    local myCharacter = game.Players.LocalPlayer.Character
+                    local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
+                    if myRoot then
+                        radiusVisual.Size = Vector3.new(currentRadius * 2, 0.1, currentRadius * 2)
+                        radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
+                        local effects = createParticles(myRoot)
+
+                        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+                            if player ~= game.Players.LocalPlayer and not whitelist[player.Name] then
+                                local char = player.Character
+                                local root = char and char:FindFirstChild("HumanoidRootPart")
+                                if root then
+                                    local distance = (root.Position - myRoot.Position).Magnitude
+                                    if distance <= currentRadius then
+                                        local killEffect = Instance.new("Part")
+                                        killEffect.Anchored = true
+                                        killEffect.CanCollide = false
+                                        killEffect.Transparency = 0.5
+                                        killEffect.Material = Enum.Material.Neon
+                                        killEffect.Color = Color3.fromRGB(0, 255, 0)
+                                        killEffect.CFrame = root.CFrame
+                                        killEffect.Size = Vector3.new(5, 5, 5)
+                                        killEffect.Parent = workspace
+                                        
+                                        -- Tween to shrink the effect
+                                        game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
+                                            Size = Vector3.new(0, 0, 0),
+                                            Transparency = 1
+                                        }):Play()
+                                        
+                                        game:GetService("Debris"):AddItem(killEffect, 0.5)
+                                        firetouchinterest(root, myCharacter.LeftHand, 0)
+                                        task.wait()
+                                        firetouchinterest(root, myCharacter.LeftHand, 1)
+                                        gettool() -- Make sure gettool() is defined
+                                    end
+                                end
+                            end
+                        end
+                        
+                        task.wait(0.1)
+                        for _, effect in ipairs(effects) do
+                            effect:Destroy()
+                        end
+                    end
+                end)
+                task.wait(0.1)
+            end
+            radiusVisual:Destroy()
+        end)
+    end
+end)
