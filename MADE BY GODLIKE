@@ -181,3 +181,40 @@ createAutoCallback("Auto Weight", "Weight")
 createAutoCallback("Auto Pushups", "Pushups")
 createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
+
+
+local folder2 = Main:AddFolder("Auto Boulders")
+
+local function createAutoRockSwitch(rockName, requiredDurability)
+    folder2:AddSwitch(rockName, function(state)
+        local autoRockEnabled = state
+        getgenv().autoFarm = autoRockEnabled
+        
+        while autoRockEnabled do
+            task.wait()
+            local player = game:GetService("Players").LocalPlayer
+            local durability = player.Durability.Value
+            
+            if durability >= requiredDurability then
+                for _, v in pairs(game.Workspace.machinesFolder:GetDescendants()) do
+                    if v.Name == "neededDurability" and v.Value == requiredDurability then
+                        local character = player.Character
+                        if character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            firetouchinterest(v.Parent.Rock, character.RightHand, 0)
+                            firetouchinterest(v.Parent.Rock, character.RightHand, 1)
+                            firetouchinterest(v.Parent.Rock, character.LeftHand, 0)
+                            firetouchinterest(v.Parent.Rock, character.LeftHand, 1)
+                            gettool() -- Presuming this function is defined elsewhere
+                        end
+                    end
+                end
+            end
+            
+            autoRockEnabled = getgenv().autoFarm -- To check for termination from outside
+        end
+    end)
+end
+
+createAutoRockSwitch("Auto Tiny Rock", 0)
+createAutoRockSwitch("Starter Rock Island", 100)
+createAutoRockSwitch("Legends Beach Rock", 5000)
