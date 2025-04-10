@@ -180,3 +180,105 @@ folder:AddSwitch("Fast Tools", function(state)
         end
     end
 end)
+
+^--- FIXED ---^
+
+local AutoWeight = window:AddTab("Auto Weight")
+local folder = AutoWeight:AddFolder("Auto Tools")
+
+folder:AddSwitch("Auto Weight", function(state)
+    autoweight = state
+    _G.AutoWeight = autoweight  -- Set global variable to the current state
+
+    if autoweight then
+        local weightTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Weight")
+        if weightTool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(weightTool)
+        end
+        
+        while autoweight do
+            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+            task.wait(0.001)
+        end
+        
+        -- Unequip tool when turning off
+        local character = game.Players.LocalPlayer.Character
+        local equipped = character:FindFirstChild("Weight")
+        if equipped then
+            equipped.Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+end)
+
+folder:AddSwitch("Auto Pushups", function(state)
+    autopushups = state
+    _G.AutoPushups = autopushups  -- Set global variable to the current state
+
+    if autopushups then
+        local pushupsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Pushups")
+        if pushupsTool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(pushupsTool)
+        end
+        
+        while autopushups do
+            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+            task.wait(0.001)
+        end
+        
+        -- Unequip tool when turning off
+        local character = game.Players.LocalPlayer.Character
+        local equipped = character:FindFirstChild("Pushups")
+        if equipped then
+            equipped.Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+end)
+
+folder:AddSwitch("Auto Situps", function(state)
+    autositups = state
+    _G.AutoSitups = autositups  -- Set global variable to the current state
+
+    if autositups then
+        local situpsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Situps")
+        if situpsTool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(situpsTool)
+        end
+        
+        while autositups do
+            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+            task.wait(0.001)
+        end
+        
+        -- Unequip tool when turning off
+        local character = game.Players.LocalPlayer.Character
+        local equipped = character:FindFirstChild("Situps")
+        if equipped then
+            equipped.Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+end)
+
+folder:AddSwitch("Auto Handstands", function(state)
+    autohandstands = state
+    _G.AutoHandstands = autohandstands  -- Set global variable to the current state
+
+    if autohandstands then
+        local handstandsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Handstands")
+        if handstandsTool then
+            game.Players.LocalPlayer.Character.Humanoid:EquipTool(handstandsTool)
+        end
+        
+        while autohandstands do
+            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+            task.wait(0.001)
+        end
+        
+        -- Unequip tool when turning off
+        local character = game.Players.LocalPlayer.Character
+        local equipped = character:FindFirstChild("Handstands")
+        if equipped then
+            equipped.Parent = game.Players.LocalPlayer.Backpack
+        end
+    end
+end)
+
