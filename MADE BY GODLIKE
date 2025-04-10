@@ -64,7 +64,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
         radiusVisual.CanCollide = false
         radiusVisual.Transparency = 0.8
         radiusVisual.Material = Enum.Material.ForceField
-        radiusVisual.Color = Color3.fromRGB(0, 255, 0)
+        radiusVisual.Color = Color3.fromRGB(0, 0, 0)
         radiusVisual.Size = Vector3.new(1, 0.1, 1)
 
         radiusVisual.Parent = workspace -- Move this outside the loop
@@ -75,7 +75,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                     local myCharacter = game.Players.LocalPlayer.Character
                     local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
                     if myRoot then
-                        radiusVisual.Size = Vector3.new(currentRadius * 2, 0.1, currentRadius * 2)
+                        radiusVisual.Size = Vector3.new(currentRadius * 5, 5.5, currentRadius * 2)
                         radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
                         local effects = createParticles(myRoot)
 
@@ -91,7 +91,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                         killEffect.CanCollide = false
                                         killEffect.Transparency = 0.5
                                         killEffect.Material = Enum.Material.Neon
-                                        killEffect.Color = Color3.fromRGB(0, 255, 0)
+                                        killEffect.Color = Color3.fromRGB(0, 0, 0)
                                         killEffect.CFrame = root.CFrame
                                         killEffect.Size = Vector3.new(5, 5, 5)
                                         killEffect.Parent = workspace
@@ -122,5 +122,61 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
             end
             radiusVisual:Destroy()
         end)
+    end
+end)
+
+
+folder:AddSwitch("Fast Tools", function(state)
+    fasttools = state
+    if fasttools then
+        _G.FastTools = true  -- Assuming you want to set it as true when enabled
+        local defaultSpeeds = {
+            {"Punch", "attackTime", state and 0 or 0.35},
+            {"Ground Slam", "attackTime", state and 0 or 6},
+            {"Stomp", "attackTime", state and 0 or 7},
+            {"Handstands", "repTime", state and 0 or 1},
+            {"Pushups", "repTime", state and 0 or 1},
+            {"Weight", "repTime", state and 0 or 1},
+            {"Situps", "repTime", state and 0 or 1}
+        }
+
+        local player = game.Players.LocalPlayer
+        local backpack = player:WaitForChild("Backpack")
+
+        for _, toolInfo in ipairs(defaultSpeeds) do
+            local tool = backpack:FindFirstChild(toolInfo[1])
+            if tool and tool:FindFirstChild(toolInfo[2]) then
+                tool[toolInfo[2]].Value = toolInfo[3]
+            end
+            local equippedTool = player.Character and player.Character:FindFirstChild(toolInfo[1])
+            if equippedTool and equippedTool:FindFirstChild(toolInfo[2]) then
+                equippedTool[toolInfo[2]].Value = toolInfo[3]
+            end
+        end
+    else
+        -- Optional: Reset back to default values when fast tools are disabled
+        local defaultSpeeds = {
+            {"Punch", "attackTime", 0.35},
+            {"Ground Slam", "attackTime", 6},
+            {"Stomp", "attackTime", 7},
+            {"Handstands", "repTime", 1},
+            {"Pushups", "repTime", 1},
+            {"Weight", "repTime", 1},
+            {"Situps", "repTime", 1}
+        }
+
+        local player = game.Players.LocalPlayer
+        local backpack = player:WaitForChild("Backpack")
+
+        for _, toolInfo in ipairs(defaultSpeeds) do
+            local tool = backpack:FindFirstChild(toolInfo[1])
+            if tool and tool:FindFirstChild(toolInfo[2]) then
+                tool[toolInfo[2]].Value = toolInfo[3]
+            end
+            local equippedTool = player.Character and player.Character:FindFirstChild(toolInfo[1])
+            if equippedTool and equippedTool:FindFirstChild(toolInfo[2]) then
+                equippedTool[toolInfo[2]].Value = toolInfo[3]
+            end
+        end
     end
 end)
