@@ -9,16 +9,16 @@ local window = library:AddWindow("MoonHub-Elerium-Public", {
 local Main = window:AddTab("Main")  -- Changed from Window to window
 local folder = Main:AddFolder("Misc")
 
-folder:AddButton("Anti Afk", function()
+folder:AddButton("Anti AFK", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk", true))()
 end)
 
-local autoJoinToggle = false  -- Corrected the variable name to consistent casing
+local autoJoinToggleBrawl = false  -- Renamed for clarity
 folder:AddSwitch("Auto Join Brawl", function(state)
-    autoJoinToggle = state  -- Consistent with the declaration of autoJoinToggle
-    if autoJoinToggle then  -- Changed from 'State' to 'autoJoinToggle'
+    autoJoinToggleBrawl = state
+    if autoJoinToggleBrawl then
         task.spawn(function()
-            while autoJoinToggle do
+            while autoJoinToggleBrawl do
                 game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")
                 task.wait(2)
             end
@@ -26,32 +26,30 @@ folder:AddSwitch("Auto Join Brawl", function(state)
     end
 end)
 
-local autoJoinToggle = false  -- Initial state of the toggle
+local autoJoinToggleBrawlGOD = false  -- Separate toggle for the second switch
 folder:AddSwitch("Auto Join Brawl GOD", function(state)
-    autoJoinToggle = state  -- Update the toggle state based on user interaction
-    if autoJoinToggle then
+    autoJoinToggleBrawlGOD = state
+    if autoJoinToggleBrawlGOD then
         task.spawn(function()
-            while autoJoinToggle do  -- Corrected to use autoJoinToggle
-                game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")  -- Join brawl
-                task.wait(0)  -- Wait time for the loop
+            while autoJoinToggleBrawlGOD do
+                game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")
+                task.wait(0)  -- Can change wait time according to need
             end
         end)
     end
 end)
 
-folder:AddButton("Infinite Yeild", function()
+folder:AddButton("Infinite Yield", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua'))()
 end)
 
-folder:AddButton("FREE auto lift pass", function()
+folder:AddButton("FREE Auto Lift Pass", function()
     local gamepassFolder = game:GetService("ReplicatedStorage").gamepassIds
-		local player = game:GetService("Players").LocalPlayer
-		for _, gamepass in pairs(gamepassFolder:GetChildren()) do
-			local value = Instance.new("IntValue")
-			value.Name = gamepass.Name
-			value.Value = gamepass.Value
-			value.Parent = player.ownedGamepasses
-		end
-	end
+    local player = game:GetService("Players").LocalPlayer
+    for _, gamepass in pairs(gamepassFolder:GetChildren()) do
+        local value = Instance.new("IntValue")
+        value.Name = gamepass.Name
+        value.Value = gamepass.Value
+        value.Parent = player.ownedGamepasses
+    end
 end)
-
