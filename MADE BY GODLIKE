@@ -6,14 +6,23 @@ local window = library:AddWindow("MoonHub-Elerium-Public", {
     can_resize = false,
 })
 
-local Main = window:AddTab("Main")  -- Changed from Window to window
+-- Define toggle variables
+local autoJoinToggleBrawl = false 
+local autoJoinToggleBrawlGOD = false  
+local matrixkillaura = false
+local fasttools = false
+local autoweight = false
+local autopushups = false
+local autositups = false
+local autohandstands = false
+
+local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
 
 folder:AddButton("Anti AFK", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk", true))()
 end)
 
-local autoJoinToggleBrawl = false  -- Renamed for clarity
 folder:AddSwitch("Auto Join Brawl", function(state)
     autoJoinToggleBrawl = state
     if autoJoinToggleBrawl then
@@ -26,14 +35,13 @@ folder:AddSwitch("Auto Join Brawl", function(state)
     end
 end)
 
-local autoJoinToggleBrawlGOD = false  -- Separate toggle for the second switch
 folder:AddSwitch("Auto Join Brawl GOD", function(state)
     autoJoinToggleBrawlGOD = state
     if autoJoinToggleBrawlGOD then
         task.spawn(function()
             while autoJoinToggleBrawlGOD do
                 game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")
-                task.wait(0)  -- Can change wait time according to need
+                task.wait(0)
             end
         end)
     end
@@ -54,11 +62,10 @@ folder:AddButton("FREE Auto Lift Pass", function()
     end
 end)
 
-
 folder:AddSwitch("Matrix Kill Aura", function(state)
     matrixkillaura = state
     if matrixkillaura then
-        getgenv().killNearby = true -- Changed `v` to `true` if `v` is not defined elsewhere
+        getgenv().killNearby = true
         local radiusVisual = Instance.new("Part")
         radiusVisual.Anchored = true
         radiusVisual.CanCollide = false
@@ -66,8 +73,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
         radiusVisual.Material = Enum.Material.ForceField
         radiusVisual.Color = Color3.fromRGB(0, 0, 0)
         radiusVisual.Size = Vector3.new(1, 0.1, 1)
-
-        radiusVisual.Parent = workspace -- Move this outside the loop
+        radiusVisual.Parent = workspace
 
         task.spawn(function()
             while getgenv().killNearby do
@@ -75,47 +81,41 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                     local myCharacter = game.Players.LocalPlayer.Character
                     local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
                     if myRoot then
+                        local currentRadius = 10 -- You may need to define or update `currentRadius`
                         radiusVisual.Size = Vector3.new(currentRadius * 5, 5.5, currentRadius * 2)
                         radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
-                        local effects = createParticles(myRoot)
-
+                        
                         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
-                            if player ~= game.Players.LocalPlayer and not whitelist[player.Name] then
+                            if player ~= game.Players.LocalPlayer then
                                 local char = player.Character
                                 local root = char and char:FindFirstChild("HumanoidRootPart")
-                                if root then
-                                    local distance = (root.Position - myRoot.Position).Magnitude
-                                    if distance <= currentRadius then
-                                        local killEffect = Instance.new("Part")
-                                        killEffect.Anchored = true
-                                        killEffect.CanCollide = false
-                                        killEffect.Transparency = 0.5
-                                        killEffect.Material = Enum.Material.Neon
-                                        killEffect.Color = Color3.fromRGB(0, 0, 0)
-                                        killEffect.CFrame = root.CFrame
-                                        killEffect.Size = Vector3.new(5, 5, 5)
-                                        killEffect.Parent = workspace
-                                        
-                                        -- Tween to shrink the effect
-                                        game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
-                                            Size = Vector3.new(0, 0, 0),
-                                            Transparency = 1
-                                        }):Play()
-                                        
-                                        game:GetService("Debris"):AddItem(killEffect, 0.5)
-                                        firetouchinterest(root, myCharacter.LeftHand, 0)
-                                        task.wait()
-                                        firetouchinterest(root, myCharacter.LeftHand, 1)
-                                        gettool() -- Make sure gettool() is defined
-                                    end
+                                if root and (root.Position - myRoot.Position).Magnitude <= currentRadius then
+                                    -- Effect handling
+                                    local killEffect = Instance.new("Part")
+                                    killEffect.Anchored = true
+                                    killEffect.CanCollide = false
+                                    killEffect.Transparency = 0.5
+                                    killEffect.Material = Enum.Material.Neon
+                                    killEffect.Color = Color3.fromRGB(0, 0, 0)
+                                    killEffect.CFrame = root.CFrame
+                                    killEffect.Size = Vector3.new(5, 5, 5)
+                                    killEffect.Parent = workspace
+                                    
+                                    -- Tween effect
+                                    game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
+                                        Size = Vector3.new(0, 0, 0),
+                                        Transparency = 1
+                                    }):Play()
+                                    
+                                    game:GetService("Debris"):AddItem(killEffect, 0.5)
+                                    firetouchinterest(root, myCharacter.LeftHand, 0)
+                                    task.wait()
+                                    firetouchinterest(root, myCharacter.LeftHand, 1)
                                 end
                             end
                         end
                         
                         task.wait(0.1)
-                        for _, effect in ipairs(effects) do
-                            effect:Destroy()
-                        end
                     end
                 end)
                 task.wait(0.1)
@@ -125,160 +125,59 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
     end
 end)
 
-
 folder:AddSwitch("Fast Tools", function(state)
     fasttools = state
-    if fasttools then
-        _G.FastTools = true  -- Assuming you want to set it as true when enabled
-        local defaultSpeeds = {
-            {"Punch", "attackTime", state and 0 or 0.35},
-            {"Ground Slam", "attackTime", state and 0 or 6},
-            {"Stomp", "attackTime", state and 0 or 7},
-            {"Handstands", "repTime", state and 0 or 1},
-            {"Pushups", "repTime", state and 0 or 1},
-            {"Weight", "repTime", state and 0 or 1},
-            {"Situps", "repTime", state and 0 or 1}
-        }
+    local speed = state and 0 or 0.35
+    local player = game.Players.LocalPlayer
+    local backpack = player:WaitForChild("Backpack")
 
-        local player = game.Players.LocalPlayer
-        local backpack = player:WaitForChild("Backpack")
+    local toolsSpeed = {
+        {"Punch", "attackTime", speed},
+        {"Ground Slam", "attackTime", state and 0 or 6},
+        {"Stomp", "attackTime", state and 0 or 7},
+        {"Handstands", "repTime", speed},
+        {"Pushups", "repTime", speed},
+        {"Weight", "repTime", speed},
+        {"Situps", "repTime", speed}
+    }
 
-        for _, toolInfo in ipairs(defaultSpeeds) do
-            local tool = backpack:FindFirstChild(toolInfo[1])
-            if tool and tool:FindFirstChild(toolInfo[2]) then
-                tool[toolInfo[2]].Value = toolInfo[3]
-            end
-            local equippedTool = player.Character and player.Character:FindFirstChild(toolInfo[1])
-            if equippedTool and equippedTool:FindFirstChild(toolInfo[2]) then
-                equippedTool[toolInfo[2]].Value = toolInfo[3]
-            end
-        end
-    else
-        -- Optional: Reset back to default values when fast tools are disabled
-        local defaultSpeeds = {
-            {"Punch", "attackTime", 0.35},
-            {"Ground Slam", "attackTime", 6},
-            {"Stomp", "attackTime", 7},
-            {"Handstands", "repTime", 1},
-            {"Pushups", "repTime", 1},
-            {"Weight", "repTime", 1},
-            {"Situps", "repTime", 1}
-        }
-
-        local player = game.Players.LocalPlayer
-        local backpack = player:WaitForChild("Backpack")
-
-        for _, toolInfo in ipairs(defaultSpeeds) do
-            local tool = backpack:FindFirstChild(toolInfo[1])
-            if tool and tool:FindFirstChild(toolInfo[2]) then
-                tool[toolInfo[2]].Value = toolInfo[3]
-            end
-            local equippedTool = player.Character and player.Character:FindFirstChild(toolInfo[1])
-            if equippedTool and equippedTool:FindFirstChild(toolInfo[2]) then
-                equippedTool[toolInfo[2]].Value = toolInfo[3]
-            end
+    for _, toolInfo in ipairs(toolsSpeed) do
+        local tool = backpack:FindFirstChild(toolInfo[1]) or (player.Character and player.Character:FindFirstChild(toolInfo[1]))
+        if tool and tool:FindFirstChild(toolInfo[2]) then
+            tool[toolInfo[2]].Value = toolInfo[3]
         end
     end
 end)
 
-^--- FIXED ---^
-
+--------------------------------------------------------------------------------
+-- Auto Weight Tab
 local AutoWeight = window:AddTab("Auto Weight")
 local folder = AutoWeight:AddFolder("Auto Tools")
 
-folder:AddSwitch("Auto Weight", function(state)
-    autoweight = state
-    _G.AutoWeight = autoweight  -- Set global variable to the current state
+local function createAutoCallback(actionName, toolName)
+    folder:AddSwitch(actionName, function(state)
+        local toolState = state
+        _G[actionName] = toolState -- Set global variable to the current state
 
-    if autoweight then
-        local weightTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Weight")
-        if weightTool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(weightTool)
+        if toolState then
+            local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(toolName)
+            if tool then
+                game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+                while toolState do
+                    game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
+                    task.wait(0.001)
+                end
+                -- Unequip tool when turning off
+                local character = game.Players.LocalPlayer.Character
+                if character:FindFirstChild(toolName) then
+                    character[toolName].Parent = game.Players.LocalPlayer.Backpack
+                end
+            end
         end
-        
-        while autoweight do
-            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
-            task.wait(0.001)
-        end
-        
-        -- Unequip tool when turning off
-        local character = game.Players.LocalPlayer.Character
-        local equipped = character:FindFirstChild("Weight")
-        if equipped then
-            equipped.Parent = game.Players.LocalPlayer.Backpack
-        end
-    end
-end)
+    end)
+end
 
-folder:AddSwitch("Auto Pushups", function(state)
-    autopushups = state
-    _G.AutoPushups = autopushups  -- Set global variable to the current state
-
-    if autopushups then
-        local pushupsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Pushups")
-        if pushupsTool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(pushupsTool)
-        end
-        
-        while autopushups do
-            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
-            task.wait(0.001)
-        end
-        
-        -- Unequip tool when turning off
-        local character = game.Players.LocalPlayer.Character
-        local equipped = character:FindFirstChild("Pushups")
-        if equipped then
-            equipped.Parent = game.Players.LocalPlayer.Backpack
-        end
-    end
-end)
-
-folder:AddSwitch("Auto Situps", function(state)
-    autositups = state
-    _G.AutoSitups = autositups  -- Set global variable to the current state
-
-    if autositups then
-        local situpsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Situps")
-        if situpsTool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(situpsTool)
-        end
-        
-        while autositups do
-            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
-            task.wait(0.001)
-        end
-        
-        -- Unequip tool when turning off
-        local character = game.Players.LocalPlayer.Character
-        local equipped = character:FindFirstChild("Situps")
-        if equipped then
-            equipped.Parent = game.Players.LocalPlayer.Backpack
-        end
-    end
-end)
-
-folder:AddSwitch("Auto Handstands", function(state)
-    autohandstands = state
-    _G.AutoHandstands = autohandstands  -- Set global variable to the current state
-
-    if autohandstands then
-        local handstandsTool = game.Players.LocalPlayer.Backpack:FindFirstChild("Handstands")
-        if handstandsTool then
-            game.Players.LocalPlayer.Character.Humanoid:EquipTool(handstandsTool)
-        end
-        
-        while autohandstands do
-            game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
-            task.wait(0.001)
-        end
-        
-        -- Unequip tool when turning off
-        local character = game.Players.LocalPlayer.Character
-        local equipped = character:FindFirstChild("Handstands")
-        if equipped then
-            equipped.Parent = game.Players.LocalPlayer.Backpack
-        end
-    end
-end)
-
+createAutoCallback("Auto Weight", "Weight")
+createAutoCallback("Auto Pushups", "Pushups")
+createAutoCallback("Auto Situps", "Situps")
+createAutoCallback("Auto Handstands", "Handstands")
