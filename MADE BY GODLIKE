@@ -125,7 +125,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
             radiusVisual:Destroy()
         end)
     else
-        getgenv().killNearby = true -- Ensure to set the flag off
+        getgenv().killNearby = false -- Set the flag to false when stopped
     end
 end)
 
@@ -258,13 +258,25 @@ createAutoCallback("Auto Pushups", "Pushups")
 createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
 
-local Auto Kill = window:AddTab("Auto Kill")
-local folderAuto Punch = Auto Kill:AddFolder("Auto Kill")
+local AutoKill = window:AddTab("Auto Kill")
+local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
 
-folderAuto Punch:AddSwitch("Auto Punch", function(state
-   autopunch = state
-   if autopunch then
-       
+folderAutoPunch:AddSwitch("Auto Punch", function(state)
+    autopunch = state
+    if autopunch then
+        getgenv().killallv2 = v
+        task.spawn(function()
+            while getgenv().killallv2 do
+                for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if player ~= game.Players.LocalPlayer then
+                        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                            killPlayer(player)
+                        end
+                    end
+                end
+                task.wait()
+            end
+        end)
+    end)
 
-
-
+-- You can define additional logic or reset the global variable as needed
