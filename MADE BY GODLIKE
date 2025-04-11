@@ -19,6 +19,7 @@ local autofrostrock = false
 local spinwheel = false
 local antiaccepttrade = false
 local antirebirth = false
+local autopunch = false
 
 local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
@@ -124,7 +125,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
             radiusVisual:Destroy()
         end)
     else
-        getgenv().killNearby = false -- Ensure to set the flag off
+        getgenv().killNearby = true -- Ensure to set the flag off
     end
 end)
 
@@ -256,3 +257,14 @@ createAutoCallback("Auto Weight", "Weight")
 createAutoCallback("Auto Pushups", "Pushups")
 createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
+
+local Auto Kill = window:AddTab("Auto Kill")
+local folderAuto Punch = Auto Kill:AddFolder("Auto Kill")
+
+folderAuto Punch:AddSwitch("Auto Punch", function(state
+   autopunch = state
+   if autopunch then
+       
+
+
+
