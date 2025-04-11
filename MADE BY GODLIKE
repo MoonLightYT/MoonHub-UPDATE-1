@@ -332,39 +332,12 @@ folderAutoKill:AddSwitch("Auto Kill ALL", function(state)
     if state then
         _G.autoKillActive = true
         local function method1()
-            while _G.autoKillActive do
-                task.wait()
-                local player = game.Players.LocalPlayer
-                player.muscleEvent:FireServer("punch", "rightHand")
-                player.muscleEvent:FireServer("punch", "leftHand")
-                for _, otherPlayer in pairs(game.Players:GetChildren()) do
-                    if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
-                        local character = game.Workspace:FindFirstChild(otherPlayer.Name)
-                        local localCharacter = player.Character
-                        if character and localCharacter then
-                            local leftHand = localCharacter:FindFirstChild("LeftHand")
-                            if leftHand then
-                                local head = character:FindFirstChild("Head")
-                                if head then
-                                    head.CFrame = leftHand.CFrame
-                                end
-                                for _, descendant in pairs(character:GetDescendants()) do
-                                    if descendant:IsA("BasePart") and descendant.Name == "Handle" then
-                                        descendant.CFrame = leftHand.CFrame
-                                    end
-                                end
-                                local sweatPart = character:FindFirstChild("sweatPart")
-                                if sweatPart then
-                                    sweatPart.CFrame = leftHand.CFrame
-                                end
-                            end
-                        end
-                    end
-                end
-            end
+            local player = game.Players.LocalPlayer
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local tool = backpack:FindFirstChild(toolName)
+        if tool and player.Character then
+            player.Character.Humanoid:EquipTool(tool)
         end
-        coroutine.wrap(method1)()
-    else
-        _G.autoKillActive = false
     end
-end)
+end
