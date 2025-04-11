@@ -158,6 +158,20 @@ folder2:AddSwitch("Auto SpinWheel", function(state)
 			task.wait(1)
 		end
 	end)
+folder2:Addbutton("Claim all chests", function()
+     while v do
+			for i = 1, 8 do
+				game:GetService("ReplicatedStorage").rEvents.freeGiftClaimRemote:InvokeServer("claimGift", i)
+			end
+			task.wait(1)
+		end
+	end)
+
+
+
+
+
+
 --------------------------------------------------------------------------------
 -- Auto Weight Tab
 local AutoWeight = window:AddTab("Auto Weight")
