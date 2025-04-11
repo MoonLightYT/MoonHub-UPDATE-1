@@ -279,11 +279,12 @@ local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
 
 folderAutoPunch:AddSwitch("Auto Punch Normal", function(state)
     toggles.autopunch = state
+    _G.fastHitActive = state  -- Set global variable based on the switch state
+    
     if state then
-        _G.fastHitActive = true
         local function equipAndModifyPunch()
+            local player = game.Players.LocalPlayer
             while _G.fastHitActive do
-                local player = game.Players.LocalPlayer
                 local punch = player.Backpack:FindFirstChild("Punch")
                 if punch then
                     punch.Parent = player.Character
@@ -293,27 +294,25 @@ folderAutoPunch:AddSwitch("Auto Punch Normal", function(state)
                 end
                 task.wait(0)
             end
+            -- Unequip when done
+            local character = player.Character
+            if character and character:FindFirstChild("Punch") then
+                character.Punch.Parent = player.Backpack
+            end
         end
         coroutine.wrap(equipAndModifyPunch)()
-    else
-        local character = game.Players.LocalPlayer.Character
-        local equipped = character:FindFirstChild("Punch")
-        if equipped then
-            equipped.Parent = game.Players.LocalPlayer.Backpack
-        end
     end
 end)
 
-folder:AddSwitch("Auto Punch FAST", function(state)
-    local autopunchfast = state  -- Use local variable for autopunch
-    _G.fastHitActive = autopunch -- Set global variable based on the switch state
+folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
+    toggles.autopunchfast = state  -- Use local variable for autopunchfast
+    _G.fastHitActive = state  -- Set global variable based on the switch state
 
-    if autopunchfast then
+    if state then
         local function equipAndModifyPunch()
             while _G.fastHitActive do
                 local player = game.Players.LocalPlayer
                 local punch = player.Backpack:FindFirstChild("Punch")
-
                 if punch then
                     punch.Parent = player.Character  -- Equip punch tool
                     if punch:FindFirstChild("attackTime") then
@@ -341,8 +340,8 @@ folder:AddSwitch("Auto Punch FAST", function(state)
             end
         end
 
-        coroutine.wrap(equipAndModifyPunch)()  -- Start the equip and modify coroutine
-        coroutine.wrap(rapidPunch)()  -- Start the rapid punch coroutine
+        coroutine.wrap(equipAndModifyPunch)()  -- Start equip and modify coroutine
+        coroutine.wrap(rapidPunch)()  -- Start rapid punch coroutine
     else
         -- If autopunch is false, return the punch tool to the backpack
         local character = game.Players.LocalPlayer.Character
@@ -364,11 +363,19 @@ folderAutoKill:AddSwitch("Auto Kill ALL", function(state)
         _G.autoKillActive = true
         local function method1()
             local player = game.Players.LocalPlayer
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        local tool = backpack:FindFirstChild(toolName)
-        if tool and player.Character then
-            player.Character.Humanoid:EquipTool(tool)
+            local backpack = player:FindFirstChild("Backpack")
+            if backpack then
+                local tool = backpack:FindFirstChild("Punch") -- Changed to a specific tool.
+                if tool and player.Character then
+                    player.Character.Humanoid:EquipTool(tool)
+                end
+            end
         end
+        coroutine.wrap(method1)()  -- Start the auto-kill method.
+    else
+        _G.autoKillActive = false
+        print("Auto Kill OFF") -- Optional: Notify user
     end
-end
+end)
+
+-- Make sure to clean up old settings and connections if necessary.
