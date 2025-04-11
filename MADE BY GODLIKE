@@ -21,7 +21,7 @@ local toggles = {
     antiaccepttrade = false,
     antirebirth = false,
     autopunch = false,
-    autopunchspeed = false,
+    autopunchfast= false,
     autokillall = false
 }
 
@@ -304,24 +304,55 @@ folderAutoPunch:AddSwitch("Auto Punch Normal", function(state)
     end
 end)
 
-folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
-    toggles.autopunchspeed = state
-    if state then
-        task.spawn(function()
-            while toggles.autopunchspeed do
+folder:AddSwitch("Auto Punch FAST", function(state)
+    local autopunchfast = state  -- Use local variable for autopunch
+    _G.fastHitActive = autopunch -- Set global variable based on the switch state
+
+    if autopunchfast then
+        local function equipAndModifyPunch()
+            while _G.fastHitActive do
+                local player = game.Players.LocalPlayer
+                local punch = player.Backpack:FindFirstChild("Punch")
+
+                if punch then
+                    punch.Parent = player.Character  -- Equip punch tool
+                    if punch:FindFirstChild("attackTime") then
+                        punch.attackTime.Value = 0  -- Set attack time to zero
+                    end
+                end
+                wait(0)  -- Small wait to avoid freezing the script
+            end
+        end
+
+        local function rapidPunch()
+            while _G.fastHitActive do
                 local player = game.Players.LocalPlayer
                 player.muscleEvent:FireServer("punch", "rightHand")
                 player.muscleEvent:FireServer("punch", "leftHand")
+
                 local character = player.Character
                 if character then
                     local punchTool = character:FindFirstChild("Punch")
                     if punchTool then
-                        punchTool:Activate()
+                        punchTool:Activate()  -- Activate the punch tool
                     end
                 end
-                task.wait(0)
+                wait(0)  -- Small wait to avoid too many requests
             end
-        end)
+        end
+
+        coroutine.wrap(equipAndModifyPunch)()  -- Start the equip and modify coroutine
+        coroutine.wrap(rapidPunch)()  -- Start the rapid punch coroutine
+    else
+        -- If autopunch is false, return the punch tool to the backpack
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            local equipped = character:FindFirstChild("Punch")
+            if equipped then
+                equipped.Parent = game.Players.LocalPlayer.Backpack  -- Unequip punch tool
+            end
+        end
+        print("Auto Punch Off")  -- Optional: Notify user
     end
 end)
 
