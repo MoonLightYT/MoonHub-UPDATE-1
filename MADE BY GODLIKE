@@ -20,6 +20,7 @@ local spinwheel = false
 local antiaccepttrade = false
 local antirebirth = false
 local autopunch = false
+local autopunchspeed = false
 local autokillall = false
 
 local Main = window:AddTab("Main")
@@ -271,13 +272,13 @@ createAutoCallback("Auto Handstands", "Handstands")
 local AutoKill = window:AddTab("Auto Kill")
 local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
 
-folderAutoPunch:AddSwitch("Auto Punch Speed", function(state)
+folderAutoPunch:AddSwitch("Auto Punch Normal", function(state)
     autopunch = state
     if autopunch then
-        _G.fastHitActive = true
-        local player = game.Players.LocalPlayer
+        _G.fastHitActive = true  -- Set it to true to activate the function
         local function equipAndModifyPunch()
             while _G.fastHitActive do
+                local player = game.Players.LocalPlayer
                 local punch = player.Backpack:FindFirstChild("Punch")
                 if punch then
                     punch.Parent = player.Character
@@ -285,25 +286,10 @@ folderAutoPunch:AddSwitch("Auto Punch Speed", function(state)
                         punch.attackTime.Value = 0
                     end
                 end
-                task.wait(0.1) -- Adjust wait time to allow for game responsiveness
+                task.wait(0)
             end
         end
-        local function rapidPunch()
-            while _G.fastHitActive do
-                player.muscleEvent:FireServer("punch", "rightHand")
-                player.muscleEvent:FireServer("punch", "leftHand")
-                local character = player.Character
-                if character then
-                    local punchTool = character:FindFirstChild("Punch")
-                    if punchTool then
-                        punchTool:Activate()
-                    end
-                end
-                task.wait(0.1) -- Adjust wait time to allow for game responsiveness
-            end
-        end
-        task.spawn(equipAndModifyPunch)
-        task.spawn(rapidPunch)
+        coroutine.wrap(equipAndModifyPunch)() -- Start the punching coroutine
     else
         local character = game.Players.LocalPlayer.Character
         local equipped = character:FindFirstChild("Punch")
@@ -313,33 +299,42 @@ folderAutoPunch:AddSwitch("Auto Punch Speed", function(state)
     end
 end)
 
+folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
+    autopunchspeed = state
+    if autopunchspeed then
+        while _G.fastHitActive do
+            local player = game.Players.LocalPlayer
+            player.muscleEvent:FireServer("punch", "rightHand")
+            player.muscleEvent:FireServer("punch", "leftHand")
+            local character = player.Character
+            if character then
+                local punchTool = character:FindFirstChild("Punch")
+                if punchTool then
+                    punchTool:Activate()
+                end
+            end
+            task.wait(0)
+        end
+    end
+end)
+
 local folderAutoKill = AutoKill:AddFolder("Auto Kill")
 
 folderAutoKill:AddSwitch("Auto Kill ALL", function(state)
     autokillall = state
     if autokillall then
-        local player = game.Players.LocalPlayer
+        getgenv().killallv2 = true
         task.spawn(function()
-            while autokillall do
-                for _, target in ipairs(game.Players:GetPlayers()) do
-                    if target ~= player and not whitelist[target.Name] then -- Exclude whitelisted players and the local player
-                        local targetChar = target.Character
-                        local rootPart = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
-
-                        if rootPart then
-                            local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
-                            local leftHand = player.Character and player.Character:FindFirstChild("LeftHand")
-
-                            if rightHand and leftHand then
-                                firetouchinterest(rightHand, rootPart, 1) -- Start touch event
-                                firetouchinterest(leftHand, rootPart, 1)
-                                firetouchinterest(rightHand, rootPart, 0) -- End touch event
-                                firetouchinterest(leftHand, rootPart, 0)
-                            end
+            while getgenv().killallv2 do
+                for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if player ~= game.Players.LocalPlayer then
+                        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+                            -- Assuming you have a function `killPlayer` defined
+                            killPlayer(player)
                         end
                     end
                 end
-                task.wait(0.1) -- Adjust the delay for optimized performance
+                task.wait()
             end
         end)
     end
