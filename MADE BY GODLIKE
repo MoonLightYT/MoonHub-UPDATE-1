@@ -20,6 +20,7 @@ local spinwheel = false
 local antiaccepttrade = false
 local antirebirth = false
 local autopunch = false
+local autokillall =  false
 
 local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
@@ -270,23 +271,77 @@ createAutoCallback("Auto Handstands", "Handstands")
 local AutoKill = window:AddTab("Auto Kill")
 local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
 
-folderAutoPunch:AddSwitch("Auto Punch", function(state)
+folderAutoPunch:AddSwitch("Auto Punch Speed", function(state)
     autopunch = state
     if autopunch then
-        getgenv().killallv2 = true -- Initialize to true when toggled
-        task.spawn(function()
-            while getgenv().killallv2 do
-                for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
-                    if player ~= game.Players.LocalPlayer then
-                        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                            killPlayer(player) -- Assuming `killPlayer` is a defined function
-                        end
+        _G.fastHitActive = Value
+		if Value then
+			local function equipAndModifyPunch()
+				while _G.fastHitActive do
+					local player = game.Players.LocalPlayer
+					local punch = player.Backpack:FindFirstChild("Punch")
+					if punch then
+						punch.Parent = player.Character
+						if punch:FindFirstChild("attackTime") then
+							punch.attackTime.Value = 0
+						end
+					end
+					wait(0)
+				end
+			end
+			local function rapidPunch()
+				while _G.fastHitActive do
+					local player = game.Players.LocalPlayer
+					player.muscleEvent:FireServer("punch", "rightHand")
+					player.muscleEvent:FireServer("punch", "leftHand")
+					local character = player.Character
+					if character then
+						local punchTool = character:FindFirstChild("Punch")
+						if punchTool then
+							punchTool:Activate()
+						end
+					end
+					wait(0)
+				end
+			end
+			coroutine.wrap(equipAndModifyPunch)()
+			coroutine.wrap(rapidPunch)()
+		else
+			local character = game.Players.LocalPlayer.Character
+			local equipped = character:FindFirstChild("Punch")
+			if equipped then
+				equipped.Parent = game.Players.LocalPlayer.Backpack
+			end
+		end
+	end)
+
+
+local folderAuto Kill = AutoKill:AddFolder("Auto Kill")
+
+folderAuto Kill:AddSwitch("Auto Kill ALL", function(state)
+      autokillall = state
+      if autokillall then
+          local player = game.Players.LocalPlayer
+
+        for _, target in ipairs(game.Players:GetPlayers()) do
+            if target ~= player and not whitelist[target.Name] then -- Exclude whitelisted players and the local player
+                local targetChar = target.Character
+                local rootPart = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+
+                if rootPart then
+                    local rightHand = player.Character and player.Character:FindFirstChild("RightHand")
+                    local leftHand = player.Character and player.Character:FindFirstChild("LeftHand")
+
+                    if rightHand and leftHand then
+                        firetouchinterest(rightHand, rootPart, 1) -- Start touch event
+                        firetouchinterest(leftHand, rootPart, 1)
+                        firetouchinterest(rightHand, rootPart, 0) -- End touch event
+                        firetouchinterest(leftHand, rootPart, 0)
                     end
                 end
-                task.wait()
             end
-        end)
-    else
-        getgenv().killallv2 = false -- Reset the variable on disable
+        end
+
+        wait(0.1) -- Adjust the delay for optimized performance
     end
 end)
