@@ -125,7 +125,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
             radiusVisual:Destroy()
         end)
     else
-        getgenv().killNearby = false -- Set the flag to false when stopped
+        getgenv().killNearby = false
     end
 end)
 
@@ -189,11 +189,15 @@ folder2:AddSwitch("Anti Accept Trade", function(state)
             end
             return OldNameCall(self, unpack(Args))
         end)
+    elseif OldNameCall then
+        -- If we are disabling anti-trade, restore the original behavior.
+        hookmetamethod(game, "__namecall", OldNameCall)
+        OldNameCall = nil -- Clear the stored function
     end
 end)
 
 folder2:AddButton("Auto Eat Ultra Eggs", function()
-    _G.AutoEgg = true -- Fixed initialization to true
+    _G.AutoEgg = true 
     task.spawn(function()
         while _G.AutoEgg do
             local boostFolder = game.Players.LocalPlayer:FindFirstChild("boostersfolder")
@@ -222,6 +226,10 @@ folder2:AddSwitch("Anti Rebirth", function(state)
             end
             return OldNameCall(self, unpack(Args))
         end)
+    elseif OldNameCall then
+        -- Restore the original behavior when disabling anti-rebirth
+        hookmetamethod(game, "__namecall", OldNameCall)
+        OldNameCall = nil -- Clear the stored function
     end
 end)
 
@@ -243,6 +251,7 @@ local function createAutoCallback(actionName, toolName)
                     game:GetService("Players").LocalPlayer.muscleEvent:FireServer("rep")
                     task.wait(0.001)
                 end
+
                 -- Unequip tool when turning off
                 local character = game.Players.LocalPlayer.Character
                 if character and character:FindFirstChild(toolName) then
@@ -264,19 +273,20 @@ local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
 folderAutoPunch:AddSwitch("Auto Punch", function(state)
     autopunch = state
     if autopunch then
-        getgenv().killallv2 = v
+        getgenv().killallv2 = true -- Initialize to true when toggled
         task.spawn(function()
             while getgenv().killallv2 do
                 for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
                     if player ~= game.Players.LocalPlayer then
                         if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-                            killPlayer(player)
+                            killPlayer(player) -- Assuming `killPlayer` is a defined function
                         end
                     end
                 end
                 task.wait()
             end
         end)
-    end)
-
--- You can define additional logic or reset the global variable as needed
+    else
+        getgenv().killallv2 = false -- Reset the variable on disable
+    end
+end)
