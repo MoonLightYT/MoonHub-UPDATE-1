@@ -16,6 +16,7 @@ local autopushups = false
 local autositups = false
 local autohandstands = false
 local autofrostrock = false
+local spinwheel = false -- Added for completeness
 
 local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
@@ -85,7 +86,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                         local currentRadius = 10 -- Define or update `currentRadius`
                         radiusVisual.Size = Vector3.new(currentRadius * 5, 5.5, currentRadius * 2)
                         radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
-                        
+
                         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
                             if player ~= game.Players.LocalPlayer then
                                 local char = player.Character
@@ -100,12 +101,12 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                     killEffect.CFrame = root.CFrame
                                     killEffect.Size = Vector3.new(5, 5, 5)
                                     killEffect.Parent = workspace
-                                    
+
                                     game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
                                         Size = Vector3.new(0, 0, 0),
                                         Transparency = 1
                                     }):Play()
-                                    
+
                                     game:GetService("Debris"):AddItem(killEffect, 0.5)
                                     firetouchinterest(root, myCharacter.LeftHand, 0)
                                     task.wait()
@@ -147,30 +148,30 @@ folder:AddSwitch("Fast Tools", function(state)
     end
 end)
 
-
 local folder2 = Main:AddFolder("Misc V2")
 
 folder2:AddSwitch("Auto SpinWheel", function(state)
   spinwheel = state
   if spinwheel then
-      while v do
-			game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
-			task.wait(1)
-		end
-	end)
-folder2:Addbutton("Claim all chests", function()
-     while v do
-			for i = 1, 8 do
-				game:GetService("ReplicatedStorage").rEvents.freeGiftClaimRemote:InvokeServer("claimGift", i)
-			end
-			task.wait(1)
-		end
-	end)
+      task.spawn(function()
+          while spinwheel do -- Use the correct variable
+              game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
+              task.wait(1)
+          end
+      end) -- Added missing end
+  end
+end)
 
-
-
-
-
+folder2:AddButton("Claim all chests", function()
+    task.spawn(function() -- Use task.spawn for non-blocking execution
+        while true do
+            for i = 1, 8 do
+                game:GetService("ReplicatedStorage").rEvents.freeGiftClaimRemote:InvokeServer("claimGift", i)
+            end
+            task.wait(1)
+        end
+    end)
+end)
 
 --------------------------------------------------------------------------------
 -- Auto Weight Tab
@@ -192,7 +193,7 @@ local function createAutoCallback(actionName, toolName)
                 end
                 -- Unequip tool when turning off
                 local character = game.Players.LocalPlayer.Character
-                if character:FindFirstChild(toolName) then
+                if character and character:FindFirstChild(toolName) then
                     character[toolName].Parent = game.Players.LocalPlayer.Backpack
                 end
             end
