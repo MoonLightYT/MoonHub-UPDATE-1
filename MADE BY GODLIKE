@@ -16,7 +16,9 @@ local autopushups = false
 local autositups = false
 local autohandstands = false
 local autofrostrock = false
-local spinwheel = false -- Added for completeness
+local spinwheel = false
+local antiaccepttrade = false
+local antirebirth = false
 
 local Main = window:AddTab("Main")
 local folder = Main:AddFolder("Misc")
@@ -43,7 +45,7 @@ folder:AddSwitch("Auto Join Brawl GOD", function(state)
         task.spawn(function()
             while autoJoinToggleBrawlGOD do
                 game:GetService("ReplicatedStorage").rEvents.brawlEvent:FireServer("joinBrawl")
-                task.wait(0)
+                task.wait(0.5)
             end
         end)
     end
@@ -73,7 +75,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
         radiusVisual.CanCollide = false
         radiusVisual.Transparency = 0.8
         radiusVisual.Material = Enum.Material.ForceField
-        radiusVisual.Color = Color3.fromRGB(0, 0, 0)
+        radiusVisual.Color = Color3.fromRGB(225, 0, 0)
         radiusVisual.Size = Vector3.new(1, 0.1, 1)
         radiusVisual.Parent = workspace
 
@@ -84,7 +86,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                     local myRoot = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
                     if myRoot then
                         local currentRadius = 10 -- Define or update `currentRadius`
-                        radiusVisual.Size = Vector3.new(currentRadius * 5, 5.5, currentRadius * 2)
+                        radiusVisual.Size = Vector3.new(currentRadius * 10, 0.40, currentRadius * 10)
                         radiusVisual.CFrame = myRoot.CFrame * CFrame.new(0, -2, 0)
 
                         for _, player in pairs(game:GetService("Players"):GetPlayers()) do
@@ -121,6 +123,8 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
             end
             radiusVisual:Destroy()
         end)
+    else
+        getgenv().killNearby = false -- Ensure to set the flag off
     end
 end)
 
@@ -151,19 +155,19 @@ end)
 local folder2 = Main:AddFolder("Misc V2")
 
 folder2:AddSwitch("Auto SpinWheel", function(state)
-  spinwheel = state
-  if spinwheel then
-      task.spawn(function()
-          while spinwheel do -- Use the correct variable
-              game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
-              task.wait(1)
-          end
-      end) -- Added missing end
-  end
+    spinwheel = state
+    if spinwheel then
+        task.spawn(function()
+            while spinwheel do
+                game:GetService("ReplicatedStorage").rEvents.openFortuneWheelRemote:InvokeServer("openFortuneWheel", game:GetService("ReplicatedStorage").fortuneWheelChances["Fortune Wheel"])
+                task.wait(1)
+            end
+        end)
+    end
 end)
 
 folder2:AddButton("Claim all chests", function()
-    task.spawn(function() -- Use task.spawn for non-blocking execution
+    task.spawn(function()
         while true do
             for i = 1, 8 do
                 game:GetService("ReplicatedStorage").rEvents.freeGiftClaimRemote:InvokeServer("claimGift", i)
@@ -173,15 +177,62 @@ folder2:AddButton("Claim all chests", function()
     end)
 end)
 
+folder2:AddSwitch("Anti Accept Trade", function(state)
+    antiaccepttrade = state
+    if antiaccepttrade then
+        local OldNameCall
+        OldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+            local Args = {...}
+            if self.Name == "tradingEvent" and Args[1] == "acceptTrade" then
+                return
+            end
+            return OldNameCall(self, unpack(Args))
+        end)
+    end
+end)
+
+folder2:AddButton("Auto Eat Ultra Eggs", function()
+    _G.AutoEgg = true -- Fixed initialization to true
+    task.spawn(function()
+        while _G.AutoEgg do
+            local boostFolder = game.Players.LocalPlayer:FindFirstChild("boostersfolder")
+            if not boostFolder then
+                useOneEgg()
+                task.wait(1)
+            else
+                local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
+                if not eggTimer or tonumber(eggTimer.Value) <= 2 then
+                    useOneEgg()
+                end
+            end
+            task.wait(1)
+        end
+    end)
+end)
+
+folder2:AddSwitch("Anti Rebirth", function(state)
+    antirebirth = state
+    if antirebirth then
+        local OldNameCall
+        OldNameCall = hookmetamethod(game, "__namecall", function(self, ...)
+            local Args = {...}
+            if self.Name == "rebirthRemote" and Args[1] == "rebirthRequest" then
+                return
+            end
+            return OldNameCall(self, unpack(Args))
+        end)
+    end
+end)
+
 --------------------------------------------------------------------------------
 -- Auto Weight Tab
 local AutoWeight = window:AddTab("Auto Weight")
-local folder = AutoWeight:AddFolder("Auto Tools")
+local folderWeight = AutoWeight:AddFolder("Auto Tools")
 
 local function createAutoCallback(actionName, toolName)
-    folder:AddSwitch(actionName, function(state)
+    folderWeight:AddSwitch(actionName, function(state)
         local toolState = state
-        _G[actionName] = toolState -- Set global variable to the current state
+        _G[actionName] = toolState
 
         if toolState then
             local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(toolName)
