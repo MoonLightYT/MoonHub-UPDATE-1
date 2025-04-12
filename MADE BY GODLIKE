@@ -1,7 +1,7 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library/main/Library", true))()
 
 local window = library:AddWindow("MoonHub-Elerium-Public", {
-    main_color = Color3.fromRGB(0, 0, 0), -- GUI Color
+    main_color = Color3.fromRGB(0, 0, 0), -- GUI color
     min_size = Vector2.new(470, 470), -- Size of the GUI
     can_resize = false,
 })
@@ -11,34 +11,31 @@ local folder = Main:AddFolder("Misc")
 local rebirthTab = Main:AddFolder("Rebirth Functions") -- Create the rebirth tab
 
 -- Variable Definitions
-local toggles = {
-    autoJoinToggleBrawl = false,
-    autoJoinToggleBrawlGOD = false,
-    matrixkillaura = false,
-    fasttools = false,
-    autoweight = false,
-    autopushups = false,
-    autositups = false,
-    autohandstands = false,
-    autofrostrock = false,
-    spinwheel = false,
-    antiaccepttrade = false,
-    antirebirth = false,
-    autopunch = false,
-    autopunchfast = false,
-    autokillall = false,
-    autorebirthinfinite = false,
-    autorebirthtarget = false,
-    hideallframes = false,
-    autosize2 = false,
-}
-
-local whitelist = {}
+local toggles = {}
 local isAutoFarming = false
 _G.autoKillActive = false
 local killMethod = "Teleport"
 local infiniteRebirthLoop
 
+-- Function for toggles initialization
+local function initializeToggles()
+    local toggleNames = {
+        "autoJoinToggleBrawl", "autoJoinToggleBrawlGOD", "matrixkillaura",
+        "fasttools", "autoweight", "autopushups", "autositups",
+        "autohandstands", "autofrostrock", "spinwheel",
+        "antiaccepttrade", "antirebirth", "autopunch",
+        "autopunchfast", "autokillall", "autorebirthinfinite",
+        "autorebirthtarget", "hideallframes", "autosize2"
+    }
+    for _, name in ipairs(toggleNames) do
+        toggles[name] = false
+    end
+end
+
+initializeToggles()
+local whitelist = {}
+
+-- Functions and Button Bindings
 -- Auto-join Brawl switch
 folder:AddSwitch("Auto Join Brawl", function(state)
     toggles.autoJoinToggleBrawl = state
@@ -89,6 +86,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
     toggles.matrixkillaura = state
     if state then
         getgenv().killNearby = true
+        -- Define the visual part representing the kill radius
         local radiusVisual = Instance.new("Part")
         radiusVisual.Anchored = true
         radiusVisual.CanCollide = false
@@ -123,7 +121,7 @@ folder:AddSwitch("Matrix Kill Aura", function(state)
                                     killEffect.Size = Vector3.new(5, 5, 5)
                                     killEffect.Parent = workspace
 
-                                    -- Tweening effect
+                                    -- Tweening effect for kill effect
                                     game:GetService("TweenService"):Create(killEffect, TweenInfo.new(0.5), {
                                         Size = Vector3.new(0, 0, 0),
                                         Transparency = 1
@@ -211,7 +209,6 @@ folder2:AddSwitch("Anti Accept Trade", function(state)
         end)
     else
         if OldNameCall then
-            -- Disable the anti-trade functionality.
             hookmetamethod(game, "__namecall", OldNameCall)
             OldNameCall = nil
         end
@@ -226,7 +223,8 @@ folder2:AddButton("Auto Eat Ultra Eggs", function()
             if boostFolder then
                 local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
                 if not eggTimer or (eggTimer and tonumber(eggTimer.Value) <= 2) then
-                    if useOneEgg then  -- Ensure useOneEgg is defined
+                    -- Check if useOneEgg function is defined elsewhere in your code
+                    if useOneEgg then  -- Ensure useOneEgg function is defined
                         useOneEgg()  
                     end
                 end
@@ -249,7 +247,6 @@ folder2:AddSwitch("Anti Rebirth", function(state)
         end)
     else
         if OldNameCall then
-            -- Restore original behavior when disabling anti-rebirth
             hookmetamethod(game, "__namecall", OldNameCall)
             OldNameCall = nil
         end
@@ -289,12 +286,12 @@ createAutoCallback("Auto Situps", "Situps")
 createAutoCallback("Auto Handstands", "Handstands")
 
 local AutoKill = window:AddTab("Auto Kill")
-local folderAutoPunch = AutoKill:AddFolder("Auto Kill")
+local folderAutoPunch = AutoKill:AddFolder("Auto Punch")
 
 folderAutoPunch:AddSwitch("Auto Punch Normal", function(state)
     toggles.autopunch = state
     _G.fastHitActive = state  -- Set global variable based on the switch state
-    
+
     if state then
         local function equipAndModifyPunch()
             local player = game.Players.LocalPlayer
@@ -365,7 +362,7 @@ folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
                 equipped.Parent = game.Players.LocalPlayer.Backpack  -- Unequip punch tool
             end
         end
-        print("Auto Punch Off")  -- Optional: Notify user
+        print("Auto Punch Off")
     end
 end)
 
@@ -375,44 +372,39 @@ local folderAutoKill = AutoKill:AddFolder("Auto Kill")
 folderAutoKill:AddSwitch("Auto Kill", function(state)
     toggles.autokillall = state
     if state then
-        -- Making sure we clean up the previous state
         _G.autoKillActive = false
         local function autoKill()
             _G.autoKillActive = true
             local player = game.Players.LocalPlayer
-            local function method1()
-                while _G.autoKillActive do
-                    task.wait()
-                    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                        if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
-                            local character = game.Workspace:FindFirstChild(otherPlayer.Name)
-                            local localCharacter = player.Character
-                            if character and localCharacter then
-                                local leftHand = localCharacter:FindFirstChild("LeftHand")
-                                if leftHand then
-                                    local head = character:FindFirstChild("Head")
-                                    if head then
-                                        head.CFrame = leftHand.CFrame
+            while _G.autoKillActive do
+                task.wait()
+                for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                    if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
+                        local character = game.Workspace:FindFirstChild(otherPlayer.Name)
+                        local localCharacter = player.Character
+                        if character and localCharacter then
+                            local leftHand = localCharacter:FindFirstChild("LeftHand")
+                            if leftHand then
+                                local head = character:FindFirstChild("Head")
+                                if head then
+                                    head.CFrame = leftHand.CFrame
+                                end
+                                for _, descendant in pairs(character:GetDescendants()) do
+                                    if descendant:IsA("BasePart") and descendant.Name == "Handle" then
+                                        descendant.CFrame = leftHand.CFrame
                                     end
-                                    for _, descendant in pairs(character:GetDescendants()) do
-                                        if descendant:IsA("BasePart") and descendant.Name == "Handle" then
-                                            descendant.CFrame = leftHand.CFrame
-                                        end
-                                    end
-                                    local sweatPart = character:FindFirstChild("sweatPart")
-                                    if sweatPart then
-                                        sweatPart.CFrame = leftHand.CFrame
-                                    end
+                                end
+                                local sweatPart = character:FindFirstChild("sweatPart")
+                                if sweatPart then
+                                    sweatPart.CFrame = leftHand.CFrame
                                 end
                             end
                         end
                     end
                 end
             end
-            coroutine.wrap(method1)()
         end
-
-        autoKill(state)
+        coroutine.wrap(autoKill)()
     else
         _G.autoKillActive = false
     end
@@ -533,8 +525,6 @@ folderAutoRebirth:AddSwitch("Auto Rebirth Target", function(state)
                     end
                     print("Auto Rebirth disabled")
                 end)()
-            else
-                print("Auto Rebirth disabled")
             end
         end)
 
