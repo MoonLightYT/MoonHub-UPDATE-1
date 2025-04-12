@@ -585,3 +585,16 @@ folderAutoRebirth:AddSwitch("Auto Rebirth Target", function(state)
         end)
     end
 end)
+
+
+local Credits = window:AddTab("Credits")
+
+Credits:AddLabel("Paid Version, 500 Robux")
+Credits:AddLabel("Script Made By Godlike")
+Credits:AddLabel("HUGE SHOUTOUT TO MOHA FOR ASSISTANCE")
+Credits:AddLabel("The paid version contains: fast rebirth, fast strength, soon fast glitch, better fast kill")
+Credits:AddLabel("Join MoonHub discord server Via youtube: @MoonLight_H3LL")
+Credits:AddLabel("Will be more updates!!!")
+Credits:AddLabel("Thank u for using MoonHub")
+Credits:AddLabel("JOIN H3LL ARMY")
+
