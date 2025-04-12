@@ -169,6 +169,13 @@ folder:AddSwitch("Fast Tools", function(state)
     end
 end)
 
+folder:AddButton("Destroy AD portal", function()
+        local part = workspace:FindFirstChild("RobloxForwardPortals")
+    if part then
+        part:Destroy()
+    end
+end)
+
 -- Create second folder
 local folder2 = Main:AddFolder("Misc V2")
 
