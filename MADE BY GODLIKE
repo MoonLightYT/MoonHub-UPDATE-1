@@ -506,6 +506,52 @@ folderAutoRebirth:AddSwitch("Auto Rebirth", function(state)
     end
 end)
 
+-- Rebirth Tab
+rebirthTab:AddLabel("REBIRTH FUNCTIONS:")
+
+local autoRebirthState = false
+local targetRebirthAmount
+
+local targetRebirthInput = rebirthTab:AddTextBox("Target Rebirth Amount", function(value)
+    targetRebirthAmount = tonumber(value)
+end, {
+    ["clear"] = false,
+    ["placeholder"] = "Enter target rebirth amount"
+})
+
+local autoRebirthToggle = rebirthTab:AddSwitch("Auto Rebirth", function(state)
+    autoRebirthState = state
+    if state then
+        coroutine.wrap(function()
+            while autoRebirthState do
+                local player = game.Players.LocalPlayer
+                local rebirths = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
+                if rebirths and targetRebirthAmount and rebirths.Value >= targetRebirthAmount then
+                    print("Target rebirth amount reached:", rebirths.Value)
+                    autoRebirthState = false
+                else
+                    game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                end
+                task.wait(0.4)
+            end
+        end)()
+        print("Auto Rebirth enabled")
+    else
+        print("Auto Rebirth disabled")
+    end
+end)
+
+local rebirthSetButton = rebirthTab:AddButton("Set Rebirth", function()
+    local r = game:GetService("ReplicatedStorage").rEvents.rebirthRemote
+    local player = game.Players.LocalPlayer
+    local l = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
+    if l and l.Value > 189800 then
+        task.wait(0.333333333333)
+        r:InvokeServer("rebirthRequest")
+    end
+    print("Rebirth set if conditions met")
+end)
+
 folderAutoRebirth:AddSwitch("Hide All Frames", function(state)
     toggles.hideallframes = state
     local rSto = game:GetService("ReplicatedStorage")
