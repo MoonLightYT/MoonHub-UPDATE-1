@@ -21,8 +21,11 @@ local toggles = {
     antiaccepttrade = false,
     antirebirth = false,
     autopunch = false,
-    autopunchfast= false,
-    autokillall = false
+    autopunchfast = false,
+    autokillall = false,
+    autorebirthinfinite = false, -- Fixed missing comma
+    hideallframes = false,
+    autosize2 = false -- Fixed missing comma
 }
 
 local Main = window:AddTab("Main")
@@ -158,6 +161,7 @@ folder:AddSwitch("Fast Tools", function(state)
     end
 end)
 
+-- Create second folder
 local folder2 = Main:AddFolder("Misc V2")
 
 folder2:AddSwitch("Auto SpinWheel", function(state)
@@ -207,16 +211,13 @@ folder2:AddButton("Auto Eat Ultra Eggs", function()
         while _G.AutoEgg do
             local boostFolder = game.Players.LocalPlayer:FindFirstChild("boostersfolder")
             if not boostFolder then
+                task.wait(1)
+                return
+            end
+            local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
+            if not eggTimer or tonumber(eggTimer.Value) <= 2 then
                 if useOneEgg then  -- Ensure useOneEgg is defined
                     useOneEgg()  
-                end
-                task.wait(1)
-            else
-                local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
-                if not eggTimer or tonumber(eggTimer.Value) <= 2 then
-                    if useOneEgg then  -- Ensure useOneEgg is defined
-                        useOneEgg()  
-                    end
                 end
             end
             task.wait(1)
@@ -319,7 +320,7 @@ folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
                         punch.attackTime.Value = 0  -- Set attack time to zero
                     end
                 end
-                wait(0)  -- Small wait to avoid freezing the script
+                task.wait(0)  -- Small wait to avoid freezing the script
             end
         end
 
@@ -336,7 +337,7 @@ folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
                         punchTool:Activate()  -- Activate the punch tool
                     end
                 end
-                wait(0)  -- Small wait to avoid too many requests
+                task.wait(0)  -- Small wait to avoid too many requests
             end
         end
 
@@ -355,27 +356,179 @@ folderAutoPunch:AddSwitch("Auto Punch FAST", function(state)
     end
 end)
 
+-- Auto Kill switch
 local folderAutoKill = AutoKill:AddFolder("Auto Kill")
 
-folderAutoKill:AddSwitch("Auto Kill ALL", function(state)
+folderAutoKill:AddSwitch("Auto Kill", function(state)
     toggles.autokillall = state
     if state then
-        _G.autoKillActive = true
-        local function method1()
+        -- Variable Definitions
+        local whitelist = {}
+        _G.autoKillActive = false
+        local killMethod = "Teleport"
+
+        local function equipTool(toolName)
             local player = game.Players.LocalPlayer
             local backpack = player:FindFirstChild("Backpack")
             if backpack then
-                local tool = backpack:FindFirstChild("Punch") -- Changed to a specific tool.
+                local tool = backpack:FindFirstChild(toolName)
                 if tool and player.Character then
                     player.Character.Humanoid:EquipTool(tool)
                 end
             end
         end
-        coroutine.wrap(method1)()  -- Start the auto-kill method.
+
+        local function autoKill(toggleState)
+            if toggleState then
+                _G.autoKillActive = true
+                equipTool("Punch")
+                local function method1()
+                    while _G.autoKillActive do
+                        task.wait()
+                        local player = game.Players.LocalPlayer
+                        player.muscleEvent:FireServer("punch", "rightHand")
+                        player.muscleEvent:FireServer("punch", "leftHand")
+                        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                            if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
+                                local character = game.Workspace:FindFirstChild(otherPlayer.Name)
+                                local localCharacter = player.Character
+                                if character and localCharacter then
+                                    local leftHand = localCharacter:FindFirstChild("LeftHand")
+                                    if leftHand then
+                                        local head = character:FindFirstChild("Head")
+                                        if head then
+                                            head.CFrame = leftHand.CFrame
+                                        end
+                                        for _, descendant in pairs(character:GetDescendants()) do
+                                            if descendant:IsA("BasePart") and descendant.Name == "Handle" then
+                                                descendant.CFrame = leftHand.CFrame
+                                            end
+                                        end
+                                        local sweatPart = character:FindFirstChild("sweatPart")
+                                        if sweatPart then
+                                            sweatPart.CFrame = leftHand.CFrame
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                coroutine.wrap(method1)()
+            else
+                _G.autoKillActive = false
+            end
+        end
+
+        autoKill(state)
+        print("Auto Kill " .. (state and "Enabled" or "Disabled"))
     else
         _G.autoKillActive = false
-        print("Auto Kill OFF") -- Optional: Notify user
+    end
+end):Set(false)
+
+local dropdownKillMethod = folderAutoKill:AddDropdown("Select Kill Method", function(method)
+    killMethod = method
+    print("Kill Method set to:", method)
+end)
+
+dropdownKillMethod:Add("Teleport")
+dropdownKillMethod:Add("Non-Teleport")
+
+-- Handle fastest kill switch
+folderAutoKill:AddSwitch("Fastest Kill", function(state)
+    local player = game.Players.LocalPlayer
+    local punch = player.Backpack:FindFirstChild("Punch")
+    local character = player.Character
+    local punch1 = character and character:FindFirstChild("Punch")
+
+    local attackTimeValue = state and 0 or 0.35
+
+    if punch and punch:FindFirstChild("attackTime") then
+        punch.attackTime.Value = attackTimeValue
+    end
+
+    if punch1 and punch1:FindFirstChild("attackTime") then
+        punch1.attackTime.Value = attackTimeValue
+    end
+end):Set(false)
+
+local dropdownWhitelist = folderAutoKill:AddDropdown("Whitelist Players", function(selectedPlayer)
+    if not table.find(whitelist, selectedPlayer) then
+        table.insert(whitelist, selectedPlayer)
+    else
+        for i, name in ipairs(whitelist) do
+            if name == selectedPlayer then
+                table.remove(whitelist, i)
+                break
+            end
+        end
+    end
+    print("Updated Whitelist:", table.concat(whitelist, ", "))
+end)
+
+for _, otherPlayer in ipairs(game.Players:GetPlayers()) do
+    if otherPlayer.Name ~= game.Players.LocalPlayer.Name then
+        dropdownWhitelist:Add(otherPlayer.Name)
+    end
+end
+
+game.Players.PlayerAdded:Connect(function(newPlayer)
+    if newPlayer.Name ~= game.Players.LocalPlayer.Name then
+        dropdownWhitelist:Add(newPlayer.Name)
     end
 end)
 
--- Make sure to clean up old settings and connections if necessary.
+game.Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if leavingPlayer.Name ~= game.Players.LocalPlayer.Name then
+        dropdownWhitelist:Remove(leavingPlayer.Name)
+    end
+end)
+
+--------------------------------------------------------------------------------
+-- Auto Rebirth Tab
+local AutoRebirth = window:AddTab("Auto Rebirth")
+local folderAutoRebirth = AutoRebirth:AddFolder("Auto Rebirth")
+
+folderAutoRebirth:AddSwitch("Auto Rebirth", function(state)
+    toggles.autorebirthinfinite = state
+    if state then
+        infiniteRebirthLoop = task.spawn(function()
+            while task.wait(0.1) do
+                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+            end
+        end)
+    else
+        if infiniteRebirthLoop then
+            task.cancel(infiniteRebirthLoop)
+            infiniteRebirthLoop = nil
+        end
+    end
+end)
+
+folderAutoRebirth:AddSwitch("Hide All Frames", function(state)
+    toggles.hideallframes = state
+    local rSto = game:GetService("ReplicatedStorage")
+    for _, obj in pairs(rSto:GetChildren()) do
+        if obj.Name:match("Frame$") then
+            obj.Visible = not state
+        end
+    end
+end)
+
+folderAutoRebirth:AddSwitch("Auto Size 2", function(state)
+    toggles.autosize2 = state
+    local autoSizeLoop
+    if state then
+        autoSizeLoop = task.spawn(function()
+            while task.wait(0) do
+                game:GetService("ReplicatedStorage").rEvents.changeSpeedSizeRemote:InvokeServer("changeSize", 2)
+            end
+        end)
+    else
+        if autoSizeLoop then
+            task.cancel(autoSizeLoop)
+            autoSizeLoop = nil
+        end
+    end
+end)
