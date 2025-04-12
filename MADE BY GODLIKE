@@ -37,6 +37,7 @@ local whitelist = {}
 local isAutoFarming = false
 _G.autoKillActive = false
 local killMethod = "Teleport"
+local infiniteRebirthLoop
 
 -- Auto-join Brawl switch
 folder:AddSwitch("Auto Join Brawl", function(state)
@@ -208,10 +209,12 @@ folder2:AddSwitch("Anti Accept Trade", function(state)
             end
             return OldNameCall(self, unpack(Args))
         end)
-    elseif OldNameCall then
-        -- Disable the anti-trade functionality.
-        hookmetamethod(game, "__namecall", OldNameCall)
-        OldNameCall = nil
+    else
+        if OldNameCall then
+            -- Disable the anti-trade functionality.
+            hookmetamethod(game, "__namecall", OldNameCall)
+            OldNameCall = nil
+        end
     end
 end)
 
@@ -244,10 +247,12 @@ folder2:AddSwitch("Anti Rebirth", function(state)
             end
             return OldNameCall(self, unpack(Args))
         end)
-    elseif OldNameCall then
-        -- Restore original behavior when disabling anti-rebirth
-        hookmetamethod(game, "__namecall", OldNameCall)
-        OldNameCall = nil
+    else
+        if OldNameCall then
+            -- Restore original behavior when disabling anti-rebirth
+            hookmetamethod(game, "__namecall", OldNameCall)
+            OldNameCall = nil
+        end
     end
 end)
 
@@ -370,70 +375,48 @@ local folderAutoKill = AutoKill:AddFolder("Auto Kill")
 folderAutoKill:AddSwitch("Auto Kill", function(state)
     toggles.autokillall = state
     if state then
-        -- Variable Definitions
-        local whitelist = {}
+        -- Making sure we clean up the previous state
         _G.autoKillActive = false
-        local killMethod = "Teleport"
-
-        local function equipTool(toolName)
+        local function autoKill()
+            _G.autoKillActive = true
             local player = game.Players.LocalPlayer
-            local backpack = player:FindFirstChild("Backpack")
-            if backpack then
-                local tool = backpack:FindFirstChild(toolName)
-                if tool and player.Character then
-                    player.Character.Humanoid:EquipTool(tool)
-                end
-            end
-        end
-
-        local function autoKill(toggleState)
-            if toggleState then
-                _G.autoKillActive = true
-                equipTool("Punch")
-                local function method1()
-                    while _G.autoKillActive do
-                        task.wait()
-                        local player = game.Players.LocalPlayer
-                        player.muscleEvent:FireServer("punch", "rightHand")
-                        player.muscleEvent:FireServer("punch", "leftHand")
-                        for _, otherPlayer in pairs(game.Players:GetPlayers()) do
-                            if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
-                                local character = game.Workspace:FindFirstChild(otherPlayer.Name)
-                                local localCharacter = player.Character
-                                if character and localCharacter then
-                                    local leftHand = localCharacter:FindFirstChild("LeftHand")
-                                    if leftHand then
-                                        local head = character:FindFirstChild("Head")
-                                        if head then
-                                            head.CFrame = leftHand.CFrame
+            local function method1()
+                while _G.autoKillActive do
+                    task.wait()
+                    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+                        if otherPlayer.Name ~= player.Name and not table.find(whitelist, otherPlayer.Name) then
+                            local character = game.Workspace:FindFirstChild(otherPlayer.Name)
+                            local localCharacter = player.Character
+                            if character and localCharacter then
+                                local leftHand = localCharacter:FindFirstChild("LeftHand")
+                                if leftHand then
+                                    local head = character:FindFirstChild("Head")
+                                    if head then
+                                        head.CFrame = leftHand.CFrame
+                                    end
+                                    for _, descendant in pairs(character:GetDescendants()) do
+                                        if descendant:IsA("BasePart") and descendant.Name == "Handle" then
+                                            descendant.CFrame = leftHand.CFrame
                                         end
-                                        for _, descendant in pairs(character:GetDescendants()) do
-                                            if descendant:IsA("BasePart") and descendant.Name == "Handle" then
-                                                descendant.CFrame = leftHand.CFrame
-                                            end
-                                        end
-                                        local sweatPart = character:FindFirstChild("sweatPart")
-                                        if sweatPart then
-                                            sweatPart.CFrame = leftHand.CFrame
-                                        end
+                                    end
+                                    local sweatPart = character:FindFirstChild("sweatPart")
+                                    if sweatPart then
+                                        sweatPart.CFrame = leftHand.CFrame
                                     end
                                 end
                             end
                         end
                     end
                 end
-                coroutine.wrap(method1)()
-            else
-                _G.autoKillActive = false
             end
+            coroutine.wrap(method1)()
         end
 
         autoKill(state)
-        print("Auto Kill " .. (state and "Enabled" or "Disabled"))
     else
         _G.autoKillActive = false
     end
-end):Set(false)
+end)
 
 local dropdownKillMethod = folderAutoKill:AddDropdown("Select Kill Method", function(method)
     killMethod = method
@@ -459,7 +442,7 @@ folderAutoKill:AddSwitch("Fastest Kill", function(state)
     if punch1 and punch1:FindFirstChild("attackTime") then
         punch1.attackTime.Value = attackTimeValue
     end
-end):Set(false)
+end)
 
 local dropdownWhitelist = folderAutoKill:AddDropdown("Whitelist Players", function(selectedPlayer)
     if not table.find(whitelist, selectedPlayer) then
@@ -514,35 +497,34 @@ folderAutoRebirth:AddSwitch("Auto Rebirth", function(state)
     end
 end)
 
+-- Target rebirth amount functionality
+local targetRebirthAmount = nil
+
 folderAutoRebirth:AddSwitch("Auto Rebirth Target", function(state)
     toggles.autorebirthtarget = state
     if state then
-        local autoRebirthState = false
-        local targetRebirthAmount = nil
-
-        local targetRebirthInput = rebirthTab:AddTextBox("Target Rebirth Amount", function(value)
+        rebirthTab:AddTextBox("Target Rebirth Amount", function(value)
             targetRebirthAmount = tonumber(value)
             if not targetRebirthAmount or targetRebirthAmount < 0 then
                 print("Please enter a valid target rebirth amount.")
                 targetRebirthAmount = nil
             end
         end, {
-            ["clear"] = false,
-            ["placeholder"] = "Enter target rebirth amount"
+            clear = false,
+            placeholder = "Enter target rebirth amount"
         })
 
         local autoRebirthToggle = rebirthTab:AddSwitch("Auto Rebirth", function(state)
-            autoRebirthState = state
             if state then
                 coroutine.wrap(function()
                     print("Auto Rebirth enabled")
-                    while autoRebirthState do
+                    while state do
                         local player = game.Players.LocalPlayer
                         local rebirths = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
                         if rebirths and targetRebirthAmount then
                             if rebirths.Value >= targetRebirthAmount then
                                 print("Target rebirth amount reached:", rebirths.Value)
-                                autoRebirthState = false
+                                break
                             else
                                 game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
                             end
@@ -556,13 +538,13 @@ folderAutoRebirth:AddSwitch("Auto Rebirth Target", function(state)
             end
         end)
 
-        local rebirthSetButton = rebirthTab:AddButton("Set Rebirth", function()
-            local r = game:GetService("ReplicatedStorage").rEvents.rebirthRemote
+        rebirthTab:AddButton("Set Rebirth", function()
+            local rebirthRemote = game:GetService("ReplicatedStorage").rEvents.rebirthRemote
             local player = game.Players.LocalPlayer
-            local l = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
-            if l and l.Value > 189800 then
+            local leaderstats = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
+            if leaderstats and leaderstats.Value > 189800 then
                 task.wait(0.33) -- Wait for a short duration
-                r:InvokeServer("rebirthRequest")
+                rebirthRemote:InvokeServer("rebirthRequest")
             end
             print("Rebirth set if conditions met")
         end)
