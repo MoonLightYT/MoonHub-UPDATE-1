@@ -1,12 +1,16 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library/main/Library", true))()
 
 local window = library:AddWindow("MoonHub-Elerium-Public", {
-    main_color = Color3.fromRGB(0, 0, 0), 
-    min_size = Vector2.new(470, 470), 
+    main_color = Color3.fromRGB(0, 0, 0), -- GUI Color
+    min_size = Vector2.new(470, 470), -- Size of the GUI
     can_resize = false,
 })
 
--- Define toggle variables
+local Main = window:AddTab("Main")
+local folder = Main:AddFolder("Misc")
+local rebirthTab = Main:AddFolder("Rebirth Functions") -- Create the rebirth tab
+
+-- Variable Definitions
 local toggles = {
     autoJoinToggleBrawl = false,
     autoJoinToggleBrawlGOD = false,
@@ -24,17 +28,17 @@ local toggles = {
     autopunchfast = false,
     autokillall = false,
     autorebirthinfinite = false,
+    autorebirthtarget = false,
     hideallframes = false,
-    autosize2 = false
+    autosize2 = false,
 }
 
-local Main = window:AddTab("Main")
-local folder = Main:AddFolder("Misc")
+local whitelist = {}
+local isAutoFarming = false
+_G.autoKillActive = false
+local killMethod = "Teleport"
 
-folder:AddButton("Anti AFK", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk", true))()
-end)
-
+-- Auto-join Brawl switch
 folder:AddSwitch("Auto Join Brawl", function(state)
     toggles.autoJoinToggleBrawl = state
     if state then
@@ -47,6 +51,7 @@ folder:AddSwitch("Auto Join Brawl", function(state)
     end
 end)
 
+-- Auto-join Brawl GOD switch
 folder:AddSwitch("Auto Join Brawl GOD", function(state)
     toggles.autoJoinToggleBrawlGOD = state
     if state then
@@ -59,13 +64,17 @@ folder:AddSwitch("Auto Join Brawl GOD", function(state)
     end
 end)
 
+folder:AddButton("Anti AFK", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/evxncodes/mainroblox/main/anti-afk", true))()
+end)
+
 folder:AddButton("Infinite Yield", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/DarkNetworks/Infinite-Yield/main/latest.lua'))()
 end)
 
 folder:AddButton("FREE Auto Lift Pass", function()
     local gamepassFolder = game:GetService("ReplicatedStorage").gamepassIds
-    local player = game:GetService("Players").LocalPlayer
+    local player = game.Players.LocalPlayer
     for _, gamepass in pairs(gamepassFolder:GetChildren()) do
         local value = Instance.new("IntValue")
         value.Name = gamepass.Name
@@ -211,14 +220,12 @@ folder2:AddButton("Auto Eat Ultra Eggs", function()
     task.spawn(function()
         while _G.AutoEgg do
             local boostFolder = game.Players.LocalPlayer:FindFirstChild("boostersfolder")
-            if not boostFolder then
-                task.wait(1)
-                return
-            end
-            local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
-            if not eggTimer or (eggTimer and tonumber(eggTimer.Value) <= 2) then
-                if useOneEgg then  -- Ensure useOneEgg is defined
-                    useOneEgg()  
+            if boostFolder then
+                local eggTimer = boostFolder:FindFirstChild("Ultra Shake")
+                if not eggTimer or (eggTimer and tonumber(eggTimer.Value) <= 2) then
+                    if useOneEgg then  -- Ensure useOneEgg is defined
+                        useOneEgg()  
+                    end
                 end
             end
             task.wait(1)
@@ -504,6 +511,61 @@ folderAutoRebirth:AddSwitch("Auto Rebirth", function(state)
             task.cancel(infiniteRebirthLoop)
             infiniteRebirthLoop = nil
         end
+    end
+end)
+
+folderAutoRebirth:AddSwitch("Auto Rebirth Target", function(state)
+    toggles.autorebirthtarget = state
+    if state then
+        local autoRebirthState = false
+        local targetRebirthAmount = nil
+
+        local targetRebirthInput = rebirthTab:AddTextBox("Target Rebirth Amount", function(value)
+            targetRebirthAmount = tonumber(value)
+            if not targetRebirthAmount or targetRebirthAmount < 0 then
+                print("Please enter a valid target rebirth amount.")
+                targetRebirthAmount = nil
+            end
+        end, {
+            ["clear"] = false,
+            ["placeholder"] = "Enter target rebirth amount"
+        })
+
+        local autoRebirthToggle = rebirthTab:AddSwitch("Auto Rebirth", function(state)
+            autoRebirthState = state
+            if state then
+                coroutine.wrap(function()
+                    print("Auto Rebirth enabled")
+                    while autoRebirthState do
+                        local player = game.Players.LocalPlayer
+                        local rebirths = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
+                        if rebirths and targetRebirthAmount then
+                            if rebirths.Value >= targetRebirthAmount then
+                                print("Target rebirth amount reached:", rebirths.Value)
+                                autoRebirthState = false
+                            else
+                                game:GetService("ReplicatedStorage").rEvents.rebirthRemote:InvokeServer("rebirthRequest")
+                            end
+                        end
+                        task.wait(0.4)
+                    end
+                    print("Auto Rebirth disabled")
+                end)()
+            else
+                print("Auto Rebirth disabled")
+            end
+        end)
+
+        local rebirthSetButton = rebirthTab:AddButton("Set Rebirth", function()
+            local r = game:GetService("ReplicatedStorage").rEvents.rebirthRemote
+            local player = game.Players.LocalPlayer
+            local l = player:FindFirstChild("leaderstats") and player.leaderstats:FindFirstChild("Rebirths")
+            if l and l.Value > 189800 then
+                task.wait(0.33) -- Wait for a short duration
+                r:InvokeServer("rebirthRequest")
+            end
+            print("Rebirth set if conditions met")
+        end)
     end
 end)
 
