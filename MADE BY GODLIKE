@@ -2,7 +2,7 @@
 local blacklist = {
     [123456789] = true,  -- Example UserID
     ["HoloGrindz"] = true, -- Example username (if using usernames)
-    -- Add more UserIDs or usernames as needed
+    ["RYU_5K8"] = true-- Add more UserIDs or usernames as needed
 }
 
 -- Function to check if a user is blacklisted
