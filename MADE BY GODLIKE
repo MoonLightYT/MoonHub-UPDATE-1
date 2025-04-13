@@ -313,42 +313,48 @@ folder2:AddSwitch("Anti Rebirth", function(state)
     end
 end)
 
-local folderMisc V3 = Misc V3:AddFolder("Misc V3")
+local folderMiscV3 = MiscV3:AddFolder("Misc V3") -- Fixed variable name
 
+folderMiscV3:AddSwitch("Infinite Jump", function(state)
+    infinitejump = state
+    if infinitejump then
+        _G.InfiniteJump = true -- Set InfiniteJump to true when enabled
+        local Player = game:GetService('Players').LocalPlayer
+        local UserInputService = game:GetService('UserInputService')
+        
+        UserInputService.JumpRequest:Connect(function()
+            if _G.InfiniteJump then
+                Player.Character:FindFirstChildOfClass('Humanoid'):ChangeState('Jumping')
+            end
+        end)
+    else
+        _G.InfiniteJump = false -- Reset when disabled
+    end
+end)
 
-folderMisc V3:AddSwitch("Infinite Jump", function(state)
-      infinitejump = state
-      if infinitejump then
-          _G.InfiniteJump = Value
-		local Player = game:GetService('Players').LocalPlayer
-		local UserInputService = game:GetService('UserInputService')
-		UserInputService.JumpRequest:Connect(function()
-			if _G.InfiniteJump then
-				Player.Character:FindFirstChildOfClass('Humanoid'):ChangeState('Jumping')
-			end
-		end)
-	end)
-
-folderMisc V3:AddSwitch("Noclip", function(state)
-       noclip = state
-       if noclip then
-           local RunService = game:GetService("RunService")
-		local Players = game:GetService("Players")
-		local LocalPlayer = Players.LocalPlayer
-		if Value then
-			getgenv().noclipConnection = RunService.Stepped:Connect(function()
-				for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-					if part:IsA("BasePart") then
-						part.CanCollide = false
-					end
-				end
-			end)
-		else
-			if getgenv().noclipConnection then
-				getgenv().noclipConnection:Disconnect()
-			end
-		end
-	end)
+folderMiscV3:AddSwitch("Noclip", function(state)
+    noclip = state
+    local RunService = game:GetService("RunService")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    
+    if noclip then
+        -- Start noclip when enabled
+        getgenv().noclipConnection = RunService.Stepped:Connect(function()
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+    else
+        -- Stop noclip when disabled
+        if getgenv().noclipConnection then
+            getgenv().noclipConnection:Disconnect()
+            getgenv().noclipConnection = nil -- Clean up the variable after disconnecting
+        end
+    end
+end)
 --------------------------------------------------------------------------------
 -- Auto Weight Tab
 local AutoWeight = window:AddTab("Auto Weight")
