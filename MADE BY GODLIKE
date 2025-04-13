@@ -1,3 +1,36 @@
+-- Define the blacklist of users (Roblox UserIDs or usernames)
+local blacklist = {
+    [123456789] = true,  -- Example UserID
+    ["HoloGrindz"] = true, -- Example username (if using usernames)
+    -- Add more UserIDs or usernames as needed
+}
+
+-- Function to check if a user is blacklisted
+local function isUserBlacklisted(userId, username)
+    return blacklist[userId] == true or blacklist[username] == true
+end
+
+-- Function to handle player joining
+local function onPlayerAdded(player)
+    local userId = player.UserId
+    local username = player.Name
+
+    -- Check if the player is blacklisted
+    if isUserBlacklisted(userId, username) then
+        player:Kick("Fuck off IP logger")
+        return
+    end
+
+    -- If not blacklisted, allow them to continue in the game
+    print("Welcome, " .. username .. "! You can use this script")
+    -- Add the rest of your game logic here
+end
+
+-- Connect the PlayerAdded event to the function
+game.Players.PlayerAdded:Connect(onPlayerAdded)
+
+
+
 -- Discord 
 -- Webhook URL 
 local webhookUrl = "https://discord.com/api/webhooks/1359418893290045470/tSE9caMSSlP6XbYwYKoQ5TRJCW2yDSjCYxqbEVj-8l84p4y3ts-yhbuZ7_jeOSEBEDM_" 
